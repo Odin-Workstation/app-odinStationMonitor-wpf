@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\app-odinstationMonitor-LIC\app-odinstationMonitor-LIC.csproj" />
     <ProjectReference Include="..\app-odinStationMonitor-Messaging\app-odinStationMonitor-Messaging.csproj" />
   </ItemGroup>
 
