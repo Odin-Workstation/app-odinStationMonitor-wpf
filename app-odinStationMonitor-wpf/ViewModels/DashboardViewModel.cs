@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Jendamark.Messaging;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,7 +11,7 @@ using TacoStationMonitor.Service;
 
 namespace TacoStationMonitor.ViewModels
 {
-    public class DashboardViewModel : INotifyPropertyChanged
+    public partial class DashboardViewModel : ObservableObject
     {
         private readonly DashboardService service = new();
 
@@ -48,90 +49,26 @@ namespace TacoStationMonitor.ViewModels
             Station = data.StationName;
         }
 
-        private int partID;
-        public int PartID
-        {
-            get => partID;
-            set
-            {
-                partID = value;
-                OnPropertyChanged();
-            }
-        }
-        private int nextPartID;
-        public int NextPartID
-        {
-            get => nextPartID;
-            set
-            {
-                nextPartID = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private int _partID;
 
-        private string childPartNo;
-        public string ChildPartNo
-        {
-            get => childPartNo;
-            set
-            {
-                childPartNo = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private int _nextPartID;
 
-        private string statusString;
-        public string StatusString
-        {
-            get => statusString;
-            set
-            {
-                statusString = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private string? _childPartNo;
 
-        private string matNo;
-        public string MatNo
-        {
-            get => matNo;
-            set
-            {
-                matNo = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private string? _statusString;
 
+        [ObservableProperty]
+        private string? _matNo;
 
-        private string station;
-        public string Station
-        {
-            get => station;
-            set
-            {
-                station = value;
-                OnPropertyChanged();
-            }
-        }
+        [ObservableProperty]
+        private string? _station;
 
-
-        private string currentTime;
-        public string CurrentTime
-        {
-            get => currentTime;
-            set
-            {
-                currentTime = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        void OnPropertyChanged([CallerMemberName] string name = "")
-        {
-            PropertyChanged?.Invoke(this,
-                new PropertyChangedEventArgs(name));
-        }
+        [ObservableProperty]        
+        private string? _currentTime;
+        
     }
 }
