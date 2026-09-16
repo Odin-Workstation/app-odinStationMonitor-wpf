@@ -49,8 +49,7 @@ namespace app_odinStationMonitor_wpf
 
                 ConsoleSettingsModel settings = settingsService.GetSettings(licOptions.DatabasePath);
 
-                Jendamark.Messaging.IMessenger messenger =
-                    InitializeZRE(settings, appSettings, _logger);
+                Jendamark.Messaging.IMessenger messenger = InitializeZRE(settings, appSettings, _logger);
 
                 _serviceProvider = InitializeServices(configuration, settings, messenger, _logger);
 
