@@ -43,7 +43,7 @@ namespace app_odinStationMonitor_wpf
             // Read ODIN configuration from LIC
             var settingsService = new ConsoleSettingsService();
             ConsoleSettingsModel settings = settingsService.GetSettings(licOptions.DatabasePath);
-            Jendamark.Messaging.IMessenger messenger = InitializeZRE(settings);
+            Jendamark.Messaging.IMessenger messenger = InitializeZRE(settings, appSettings);
 
             // Configure DI
             _serviceProvider = InitializeServices(configuration, settings, messenger);
@@ -84,22 +84,20 @@ namespace app_odinStationMonitor_wpf
             return services.BuildServiceProvider();
         }
 
-        private  Jendamark.Messaging.IMessenger InitializeZRE(ConsoleSettingsModel settings, AppSettings appSettings)
-        {             
-
-            int stationId = appSettings.StationId;
-            int subStationIndex = appSettings.SubStationIndex;
+        private Jendamark.Messaging.IMessenger InitializeZRE(ConsoleSettingsModel settings, AppSettings appSettings)
+        {            
             int appIndex = 0;
 
-            var station = settings.Stations.Single(x => x.StationID == stationId);
+            var station = settings.Stations.Single(x => x.StationID == appSettings.StationId);
 
-            var subStation = station.SubStations.Single(x => x.SubStationIndex == subStationIndex);
+            var subStation = station.SubStations.Single();
+
+            int stationId = station.StationID;
+            int subStationIndex = subStation.SubStationIndex;
 
             var domains = subStation.ZREDomains.ToHashSet();
 
-            string baseName =
-                $"STN{stationId}SUBSTN{subStationIndex}";
-
+            string baseName = $"STN{stationId}SUBSTN{subStationIndex}";
             _zreStarter = new ZREMessagingStarter(
                 // logger,
                 baseName,
