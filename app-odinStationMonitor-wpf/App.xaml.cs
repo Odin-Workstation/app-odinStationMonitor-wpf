@@ -6,6 +6,7 @@ using System.Data;
 using System.Windows;
 using TacoStationMonitor.Config;
 using TacoStationMonitor.Services;
+using Jendamark.Messaging.ZRE;
 
 namespace app_odinStationMonitor_wpf
 {
@@ -15,6 +16,7 @@ namespace app_odinStationMonitor_wpf
     public partial class App : Application
     {
         private ServiceProvider? _serviceProvider;
+       
 
         protected override void OnStartup(StartupEventArgs e)
         {
