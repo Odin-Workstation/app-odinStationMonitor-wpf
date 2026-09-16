@@ -12,6 +12,8 @@ using System.Data;
 using System.Windows;
 using TacoStationMonitor.Config;
 using TacoStationMonitor.Services;
+using TacoStationMonitor.ViewModels;
+using TacoStationMonitor.Views;
 
 namespace app_odinStationMonitor_wpf
 {
@@ -53,7 +55,9 @@ namespace app_odinStationMonitor_wpf
 
                 _serviceProvider = InitializeServices(configuration, settings, messenger, _logger);
 
-                // Resolve MainWindow etc.
+                var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+                mainWindow.Show();
+
             }
             catch (Exception ex)
             {
@@ -92,10 +96,10 @@ namespace app_odinStationMonitor_wpf
             // services.AddSingleton<IStationRepository, StationRepository>();           
 
             // ViewModels
-            // services.AddTransient<MainViewModel>();
+            services.AddTransient<DashboardViewModel>();
 
             // Views
-            // services.AddTransient<MainWindow>();
+            services.AddTransient<MainWindow>();
 
             return services.BuildServiceProvider();
         }

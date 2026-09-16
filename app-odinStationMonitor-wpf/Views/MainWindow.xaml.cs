@@ -46,14 +46,12 @@ namespace TacoStationMonitor.Views
 
         private readonly IConfiguration _configuration;
 
-        public MainWindow()
+        public MainWindow(DashboardViewModel viewModel, IConfiguration configuration)
         {
             InitializeComponent();
-            DataContext = new DashboardViewModel();
-            _configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
+
+            DataContext = viewModel;
+            _configuration = configuration;
 
             Loaded += MainWindow_Loaded;
         }

@@ -1,9 +1,12 @@
-﻿using TacoStationMonitor.Models;
-using TacoStationMonitor.Service;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Jendamark.Messaging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using TacoStationMonitor.Models;
+using TacoStationMonitor.Service;
 
 namespace TacoStationMonitor.ViewModels
 {
@@ -12,9 +15,14 @@ namespace TacoStationMonitor.ViewModels
         private readonly DashboardService service = new();
 
         private readonly DispatcherTimer timer;
+        private readonly Jendamark.Messaging.IMessenger _messenger;
+        private readonly ILogger<DashboardViewModel> _logger;
 
-        public DashboardViewModel()
+        public DashboardViewModel(Jendamark.Messaging.IMessenger messenger, ILogger<DashboardViewModel> logger)
         {
+            _messenger = messenger;
+            _logger = logger;
+
             timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(200)
