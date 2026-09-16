@@ -5,6 +5,8 @@ using Jendamark.Messaging.ZRE;
 using Jendamark.ODINWorkStationV2.LocalInformationCache.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Configuration;
 using System.Data;
 using System.Windows;
@@ -20,40 +22,51 @@ namespace app_odinStationMonitor_wpf
     {
         private ServiceProvider? _serviceProvider;
         private ZREMessagingStarter? _zreStarter;
+        private Serilog.ILogger? _logger;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Load application configuration
-            var builder = new ConfigurationBuilder()
-                                             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                                             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false)
+                .Build();
 
-            IConfiguration configuration = builder.Build();
+            _logger = InitializeLogger(configuration);
 
-            // Get LIC configuration
-            var licOptions = new LicOptions();
-            configuration.GetSection("LIC").Bind(licOptions);
+            try
+            {
+                _logger.Information("Starting TACO Station Monitor");
 
-            // Get the AppSettings section from the configuration
-            var appSettings = new AppSettings();
-            configuration.GetSection("Settings").Bind(appSettings);
+                var licOptions = new LicOptions();
+                configuration.GetSection("LIC").Bind(licOptions);
 
-            // Read ODIN configuration from LIC
-            var settingsService = new ConsoleSettingsService();
-            ConsoleSettingsModel settings = settingsService.GetSettings(licOptions.DatabasePath);
-            Jendamark.Messaging.IMessenger messenger = InitializeZRE(settings, appSettings);
+                AppSettings? appSettings = new AppSettings();
+                configuration.GetSection("Settings").Bind(appSettings);
 
-            // Configure DI
-            _serviceProvider = InitializeServices(configuration, settings, messenger);
+                var settingsService = new ConsoleSettingsService();
 
-            // We'll resolve and show MainWindow here later
+                ConsoleSettingsModel settings = settingsService.GetSettings(licOptions.DatabasePath);
 
+                Jendamark.Messaging.IMessenger messenger =
+                    InitializeZRE(settings, appSettings, _logger);
 
+                _serviceProvider = InitializeServices(configuration, settings, messenger, _logger);
+
+                // Resolve MainWindow etc.
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex,
+                    "TACO Station Monitor failed during startup");
+
+                Shutdown(-1);
+            }
         }
 
-        private  ServiceProvider InitializeServices(IConfiguration configuration, ConsoleSettingsModel settings, Jendamark.Messaging.IMessenger messenger)
+        private  ServiceProvider InitializeServices(IConfiguration configuration, ConsoleSettingsModel settings,
+                                                    Jendamark.Messaging.IMessenger messenger, Serilog.ILogger logger)
         {
             var services = new ServiceCollection();
 
@@ -69,11 +82,15 @@ namespace app_odinStationMonitor_wpf
             // ZRE
             services.AddSingleton(messenger);
 
-            // DAL
-            // services.AddSingleton<IStationRepository, StationRepository>();
+            // Logging
+            services.AddLogging(builder =>
+            {
+                builder.ClearProviders();
+                builder.AddSerilog(logger);
+            });
 
-            // Messaging
-            // services.AddSingleton<IZreService, ZreService>();
+            // DAL
+            // services.AddSingleton<IStationRepository, StationRepository>();           
 
             // ViewModels
             // services.AddTransient<MainViewModel>();
@@ -84,7 +101,7 @@ namespace app_odinStationMonitor_wpf
             return services.BuildServiceProvider();
         }
 
-        private Jendamark.Messaging.IMessenger InitializeZRE(ConsoleSettingsModel settings, AppSettings appSettings)
+        private Jendamark.Messaging.IMessenger InitializeZRE(ConsoleSettingsModel settings, AppSettings appSettings, Serilog.ILogger logger)
         {            
             int appIndex = 0;
 
@@ -99,7 +116,7 @@ namespace app_odinStationMonitor_wpf
 
             string baseName = $"STN{stationId}SUBSTN{subStationIndex}";
             _zreStarter = new ZREMessagingStarter(
-                // logger,
+                logger,
                 baseName,
                 settings.ZRENetworkInterfaceAddress,
                 settings.ZREBroadcastPort,
@@ -110,6 +127,27 @@ namespace app_odinStationMonitor_wpf
             _zreStarter.Start();
 
             return _zreStarter.Messenger;
+        }
+
+
+        private static Serilog.ILogger InitializeLogger(IConfiguration configuration)
+        {
+            var seqUrl = configuration["Logging:SeqUrl"]
+                ?? throw new InvalidOperationException(
+                    "Seq URL is not configured.");
+
+            var logFile = configuration["Logging:LogFile"]
+                ?? "Logs\\TacoStationMonitor-.log";
+
+            return new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", "TacoStationMonitor")
+                .WriteTo.Seq(seqUrl)
+                .WriteTo.File(
+                    logFile,
+                    rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
 

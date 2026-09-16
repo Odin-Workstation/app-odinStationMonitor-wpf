@@ -9,6 +9,6 @@ namespace TacoStationMonitor.Config
     public sealed class AppSettings
     {
         public int StationId { get; set; }
-        public int SubStationIndex { get; set; }
+        public int SubStationIndex { get; set; }       
     }
 }
