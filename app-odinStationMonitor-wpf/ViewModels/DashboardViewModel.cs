@@ -16,11 +16,10 @@ namespace TacoStationMonitor.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject, IDisposable
     {
-        private readonly IDashboardService _dashBoardDataservice;
+        private readonly IDashboardService _dashBoardDataService;
         private bool _disposed = false;
         private readonly string _stationName = string.Empty;
-
-        private readonly DispatcherTimer timer;
+       
         private readonly Jendamark.Messaging.IMessenger _messenger;
         private readonly ILogger<DashboardViewModel> _logger;
         private readonly AppSettings _appSettings;
@@ -30,10 +29,11 @@ namespace TacoStationMonitor.ViewModels
         [ObservableProperty]
         private string? _currentTime;
 
-        public DashboardViewModel(AppSettings appSettings, Jendamark.Messaging.IMessenger messenger,IDashboardService dashboardService, ILogger<DashboardViewModel> logger)
+        public DashboardViewModel(AppSettings appSettings, Jendamark.Messaging.IMessenger messenger,
+                                  IDashboardService dashboardService, ILogger<DashboardViewModel> logger)
         {
             _messenger = messenger;
-            _dashBoardDataservice = dashboardService;
+            _dashBoardDataService = dashboardService;
             _logger = logger;
             _appSettings = appSettings;
 
@@ -68,7 +68,7 @@ namespace TacoStationMonitor.ViewModels
         /// <returns></returns>
         private async Task BindPartAsync(int partID)
         {
-            DashboardState data = await _dashBoardDataservice.GetDashboardDataAsync(partID);
+            DashboardState data = await _dashBoardDataService.GetDashboardDataAsync(partID);
 
             if (data == null)
                 return;
