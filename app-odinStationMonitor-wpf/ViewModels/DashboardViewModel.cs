@@ -24,23 +24,8 @@ namespace TacoStationMonitor.ViewModels
         private readonly Jendamark.Messaging.IMessenger _messenger;
         private readonly ILogger<DashboardViewModel> _logger;
         private readonly AppSettings _appSettings;
-        [ObservableProperty]
-        private int _partID;
 
-        [ObservableProperty]
-        private int _nextPartID;
-
-        [ObservableProperty]
-        private string? _childPartNo;
-
-        [ObservableProperty]
-        private string? _statusString;
-
-        [ObservableProperty]
-        private string? _matNo;
-
-        [ObservableProperty]
-        private string? _station;
+        public StationDashboardViewModel Dashboard { get; } = new();
 
         [ObservableProperty]
         private string? _currentTime;
@@ -59,6 +44,7 @@ namespace TacoStationMonitor.ViewModels
         {
             _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_appSettings.StationId)));
             _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-StationComplete", StationComplete, TargetIDCreator.Station(_appSettings.StationId)));
+            _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-CleaningUpStation", StationComplete, TargetIDCreator.Station(_appSettings.StationId)));
         }       
 
         private void PartValidated(int subscriberID, IMessage message)
@@ -83,16 +69,21 @@ namespace TacoStationMonitor.ViewModels
         private async Task BindPartAsync(int partID)
         {
             DashboardState data = await _dashBoardDataservice.GetDashboardDataAsync(partID);
-            
+
             if (data == null)
                 return;
 
-            PartID = data.PartID;
-            NextPartID = data.NextPartID;
-            ChildPartNo = data.ChildPartNo;
-            StatusString = data.StatusString;
-            MatNo = data.MatNo;
-            Station = data.StationName;
+            UpdateDashbordState(data);
+        }
+
+        private void UpdateDashbordState(DashboardState data)
+        {
+            Dashboard.PartID = data.PartID;
+            Dashboard.NextPartID = data.NextPartID;
+            Dashboard.ChildPartNo = data.ChildPartNo;
+            Dashboard.StatusString = data.StatusString;
+            Dashboard.MatNo = data.MatNo;
+            Dashboard.Station = data.StationName;           
         }
 
         /// <summary>
@@ -120,7 +111,9 @@ namespace TacoStationMonitor.ViewModels
                         MatNo = string.Empty,
                         StationName = _stationName
                     };
-                };
+
+                    UpdateDashbordState(data);
+                }
             }
             catch (Exception ex)
             {

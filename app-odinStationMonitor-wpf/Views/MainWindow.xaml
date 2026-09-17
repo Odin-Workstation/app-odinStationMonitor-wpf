@@ -12,9 +12,9 @@
 
         <!--================ ROWS ================-->
         <Grid.RowDefinitions>
-            <RowDefinition Height="85"/>
-            <RowDefinition/>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="85" />
+            <RowDefinition />
+            <RowDefinition Height="20" />
         </Grid.RowDefinitions>
 
         <!--================ HEADER ================-->
@@ -24,15 +24,15 @@
             <Grid Margin="20,0">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="280" />
                 </Grid.ColumnDefinitions>
 
                 <Image Source="pack://application:,,,/Images/Odin-Workstation-Logo_white-text-55px.png"
                        Height="45"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Center"
-                       Stretch="Uniform"/>
+                       Stretch="Uniform" />
 
                 <!--<TextBlock Text="ODIN WORKSTATION"
                            VerticalAlignment="Center"
@@ -53,7 +53,7 @@
                                HorizontalAlignment="Center"
                                FontSize="25"
                                FontWeight="SemiBold"
-                               Foreground="White"/>
+                               Foreground="White" />
 
                 </StackPanel>
 
@@ -67,52 +67,46 @@
               Margin="25,25,25,25">
 
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <controls:DashboardCard
-                Margin="10"
-                Title="Current Sequence Number"
-                Value="{Binding PartID}" />
+            <controls:DashboardCard Margin="10"
+                                    Title="Current Sequence Number"
+                                    Value="{Binding Dashboard.PartID}" />
 
-            <controls:DashboardCard
-                Grid.Column="1"
-                Margin="10"
-                Title="Next Sequence Number"
-                Value="{Binding NextPartID}" />
+            <controls:DashboardCard Grid.Column="1"
+                                    Margin="10"
+                                    Title="Next Sequence Number"
+                                    Value="{Binding Dashboard.NextPartID}" />
 
-            <controls:DashboardCard
-                Grid.Row="1"
-                Margin="10"
-                Title="Child Part Number"
-                Value="{Binding ChildPartNo}"/>
+            <controls:DashboardCard Grid.Row="1"
+                                    Margin="10"
+                                    Title="Child Part Number"
+                                    Value="{Binding Dashboard.ChildPartNo}" />
 
-            <controls:DashboardCard
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="10" 
-                Title="Status"
-                Value="{Binding StatusString}"/>
+            <controls:DashboardCard Grid.Row="1"
+                                    Grid.Column="1"
+                                    Margin="10"
+                                    Title="Status"
+                                    Value="{Binding Dashboard.StatusString}" />
 
-            <controls:DashboardCard
-                Grid.Row="2"
-                Margin="10"
-                Title="MAT Number"
-                Value="{Binding MatNo}" />
+            <controls:DashboardCard Grid.Row="2"
+                                    Margin="10"
+                                    Title="MAT Number"
+                                    Value="{Binding Dashboard.MatNo}" />
 
-            <controls:DashboardCard
-                Grid.Row="2"
-                Grid.Column="1"
-                Margin="10"                
-                Title="Station Number"
-                Value="{Binding Station}" />
+            <controls:DashboardCard Grid.Row="2"
+                                    Grid.Column="1"
+                                    Margin="10"
+                                    Title="Station Number"
+                                    Value="{Binding Dashboard.Station}" />
 
         </Grid>
 
