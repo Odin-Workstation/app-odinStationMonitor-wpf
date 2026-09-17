@@ -19,10 +19,33 @@ namespace TacoStationMonitor.ViewModels
         private readonly Jendamark.Messaging.IMessenger _messenger;
         private readonly ILogger<DashboardViewModel> _logger;
 
+        [ObservableProperty]
+        private int _partID;
+
+        [ObservableProperty]
+        private int _nextPartID;
+
+        [ObservableProperty]
+        private string? _childPartNo;
+
+        [ObservableProperty]
+        private string? _statusString;
+
+        [ObservableProperty]
+        private string? _matNo;
+
+        [ObservableProperty]
+        private string? _station;
+
+        [ObservableProperty]
+        private string? _currentTime;
+
         public DashboardViewModel(Jendamark.Messaging.IMessenger messenger, ILogger<DashboardViewModel> logger)
         {
             _messenger = messenger;
             _logger = logger;
+
+            BindMessages();
 
             timer = new DispatcherTimer
             {
@@ -30,6 +53,11 @@ namespace TacoStationMonitor.ViewModels
             };
             timer.Tick += Timer_Tick;
             timer.Start();
+        }
+
+        private void BindMessages()
+        {
+            _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_stationID)));
         }
 
         private async void Timer_Tick(object sender, EventArgs e)
@@ -49,26 +77,21 @@ namespace TacoStationMonitor.ViewModels
             Station = data.StationName;
         }
 
-        [ObservableProperty]
-        private int _partID;
+        private void PartValidated(int subscriberID, IMessage message)
+        {
+            var payloadValidator = new PayloadValidator<PartValidationPayload>(message);
+            try
+            {
+                var payload = payloadValidator.Validate();
+                _ = BindPartAsync(payload.PartValidationOutput.PartIDOut ?? 0);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating payload for PartValidated message.");
+            }
+        }
 
-        [ObservableProperty]
-        private int _nextPartID;
-
-        [ObservableProperty]
-        private string? _childPartNo;
-
-        [ObservableProperty]
-        private string? _statusString;
-
-        [ObservableProperty]
-        private string? _matNo;
-
-        [ObservableProperty]
-        private string? _station;
-
-        [ObservableProperty]        
-        private string? _currentTime;
+       
         
     }
 }

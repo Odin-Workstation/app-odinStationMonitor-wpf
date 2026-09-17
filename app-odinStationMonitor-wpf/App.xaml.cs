@@ -92,7 +92,7 @@ namespace app_odinStationMonitor_wpf
                 builder.AddSerilog(logger);
             });
 
-            // DAL
+            // Data Service
             // services.AddSingleton<IStationRepository, StationRepository>();           
 
             // ViewModels
