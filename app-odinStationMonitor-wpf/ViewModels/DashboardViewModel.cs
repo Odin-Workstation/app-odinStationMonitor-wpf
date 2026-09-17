@@ -14,9 +14,10 @@ using TacoStationMonitor.Service;
 
 namespace TacoStationMonitor.ViewModels
 {
-    public partial class DashboardViewModel : ObservableObject
+    public partial class DashboardViewModel : ObservableObject, IDisposable
     {
         private readonly IDashboardService _service;
+        private bool _disposed = false;
 
         private readonly DispatcherTimer timer;
         private readonly Jendamark.Messaging.IMessenger _messenger;
@@ -98,7 +99,11 @@ namespace TacoStationMonitor.ViewModels
             }
         }
 
-
+        /// <summary>
+        /// Called when a part is validated in the station
+        /// </summary>
+        /// <param name="partID"></param>
+        /// <returns></returns>
         private async Task BindPartAsync(int partID)
         {
             DashboardState data = await _service.GetDashboardDataAsync(partID);
@@ -112,6 +117,17 @@ namespace TacoStationMonitor.ViewModels
             StatusString = data.StatusString;
             MatNo = data.MatNo;
             Station = data.StationName;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _messenger.Unsubscribe(this);
+
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }
