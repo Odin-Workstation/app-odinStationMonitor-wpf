@@ -16,8 +16,9 @@ namespace TacoStationMonitor.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject, IDisposable
     {
-        private readonly IDashboardService _service;
+        private readonly IDashboardService _dashBoardDataservice;
         private bool _disposed = false;
+        private readonly string _stationName = string.Empty;
 
         private readonly DispatcherTimer timer;
         private readonly Jendamark.Messaging.IMessenger _messenger;
@@ -47,7 +48,7 @@ namespace TacoStationMonitor.ViewModels
         public DashboardViewModel(AppSettings appSettings, Jendamark.Messaging.IMessenger messenger,IDashboardService dashboardService, ILogger<DashboardViewModel> logger)
         {
             _messenger = messenger;
-            _service = dashboardService;
+            _dashBoardDataservice = dashboardService;
             _logger = logger;
             _appSettings = appSettings;
 
@@ -57,6 +58,7 @@ namespace TacoStationMonitor.ViewModels
         private void BindMessages()
         {
             _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_appSettings.StationId)));
+            _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-StationComplete", StationComplete, TargetIDCreator.Station(_appSettings.StationId)));
         }       
 
         private void PartValidated(int subscriberID, IMessage message)
@@ -80,7 +82,7 @@ namespace TacoStationMonitor.ViewModels
         /// <returns></returns>
         private async Task BindPartAsync(int partID)
         {
-            DashboardState data = await _service.GetDashboardDataAsync(partID);
+            DashboardState data = await _dashBoardDataservice.GetDashboardDataAsync(partID);
             
             if (data == null)
                 return;
@@ -91,6 +93,39 @@ namespace TacoStationMonitor.ViewModels
             StatusString = data.StatusString;
             MatNo = data.MatNo;
             Station = data.StationName;
+        }
+
+        /// <summary>
+        /// Called when the Part exists in the station and is completed, or the part is removed from the station
+        /// </summary>
+        /// <param name="subscriberID"></param>
+        /// <param name="message"></param>
+
+        private void StationComplete(int subscriberID, IMessage message)
+        {
+            var payloadValidator = new PayloadValidator<StationPayload>(message);
+            try
+            {
+                var payload = payloadValidator.Validate();                
+                int stationId = payload.StationID;
+
+                if (stationId == _appSettings.StationId)
+                {
+                    DashboardState data = new DashboardState()
+                    {
+                        PartID = 0,
+                        NextPartID = 0,
+                        ChildPartNo = string.Empty,
+                        StatusString = string.Empty,
+                        MatNo = string.Empty,
+                        StationName = _stationName
+                    };
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating payload for StationComplete message.");
+            }
         }
 
         public void Dispose()
