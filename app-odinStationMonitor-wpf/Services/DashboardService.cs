@@ -8,12 +8,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TacoStationMonitor.Service
-{    
-    public class DashboardService
+{
+    public class DashboardService : IDashboardService
     {
         private readonly HttpClient _client = new();
 
-        public  Task<DashboardState?> GetDashboardData()
+        public async Task<DashboardState?> GetDashboardDataAsync(int partId)
+        {
+            try
+            {
+                DashboardState ds = new DashboardState();
+                return ds;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public Task<DashboardState?> GetDashboardData()
         {
             try
             {

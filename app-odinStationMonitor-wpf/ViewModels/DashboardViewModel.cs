@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jendamark.Messaging;
+using Jendamark.ODINWorkStationV2.Library.Payloads;
+using Jendamark.ODINWorkStationV2.LocalInformationCache.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using TacoStationMonitor.Config;
 using TacoStationMonitor.Models;
 using TacoStationMonitor.Service;
 
@@ -13,12 +16,12 @@ namespace TacoStationMonitor.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject
     {
-        private readonly DashboardService service = new();
+        private readonly IDashboardService _service;
 
         private readonly DispatcherTimer timer;
         private readonly Jendamark.Messaging.IMessenger _messenger;
         private readonly ILogger<DashboardViewModel> _logger;
-
+        private readonly AppSettings _appSettings;
         [ObservableProperty]
         private int _partID;
 
@@ -40,31 +43,35 @@ namespace TacoStationMonitor.ViewModels
         [ObservableProperty]
         private string? _currentTime;
 
-        public DashboardViewModel(Jendamark.Messaging.IMessenger messenger, ILogger<DashboardViewModel> logger)
+        public DashboardViewModel(AppSettings appSettings, Jendamark.Messaging.IMessenger messenger,IDashboardService dashboardService, ILogger<DashboardViewModel> logger)
         {
             _messenger = messenger;
+            _service = dashboardService;
             _logger = logger;
+            _appSettings = appSettings;
 
             BindMessages();
 
+           
             timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(200)
             };
             timer.Tick += Timer_Tick;
             timer.Start();
+           
         }
 
         private void BindMessages()
         {
-            _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_stationID)));
+            _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_appSettings.StationId)));
         }
 
         private async void Timer_Tick(object sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToString("dd MMM yyyy HH:mm:ss");
 
-            DashboardState data = await service.GetDashboardData();
+            DashboardState data = await _service.GetDashboardData();
 
             if (data == null)
                 return;
@@ -91,7 +98,20 @@ namespace TacoStationMonitor.ViewModels
             }
         }
 
-       
-        
+
+        private async Task BindPartAsync(int partID)
+        {
+            DashboardState data = await _service.GetDashboardDataAsync(partID);
+            
+            if (data == null)
+                return;
+
+            PartID = data.PartID;
+            NextPartID = data.NextPartID;
+            ChildPartNo = data.ChildPartNo;
+            StatusString = data.StatusString;
+            MatNo = data.MatNo;
+            Station = data.StationName;
+        }
     }
 }

@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="app-odinStationMonitor-Library/app-odinStationMonitor-Library.csproj" Id="bae8dfdb-d921-4ddc-9ba7-6977e6ed9d28" />
   <Project Path="app-odinstationMonitor-LIC/app-odinstationMonitor-LIC.csproj" Id="8c579a42-79e7-4af2-ae75-8273111567e5" />
   <Project Path="app-odinStationMonitor-Messaging/app-odinStationMonitor-Messaging.csproj" />
   <Project Path="app-odinStationMonitor-wpf/app-odinStationMonitor-wpf.csproj" />

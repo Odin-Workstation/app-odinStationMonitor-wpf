@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\app-odinStationMonitor-Library\app-odinStationMonitor-Library.csproj" />
     <ProjectReference Include="..\app-odinstationMonitor-LIC\app-odinstationMonitor-LIC.csproj" />
     <ProjectReference Include="..\app-odinStationMonitor-Messaging\app-odinStationMonitor-Messaging.csproj" />
   </ItemGroup>

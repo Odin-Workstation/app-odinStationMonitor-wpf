@@ -25,6 +25,9 @@ namespace app_odinStationMonitor_Messaging
         public void Start()
         {
             _protocolController.ServiceTaskRunning += ProtocolController_ServiceTaskRunning;
+
+            _protocolController.StartController();
+
         }
 
         private void ProtocolController_ServiceTaskRunning(object sender, EventArgs e)

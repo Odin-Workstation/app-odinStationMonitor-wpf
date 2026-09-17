@@ -11,6 +11,7 @@ using System.Configuration;
 using System.Data;
 using System.Windows;
 using TacoStationMonitor.Config;
+using TacoStationMonitor.Service;
 using TacoStationMonitor.Services;
 using TacoStationMonitor.ViewModels;
 using TacoStationMonitor.Views;
@@ -53,7 +54,7 @@ namespace app_odinStationMonitor_wpf
 
                 Jendamark.Messaging.IMessenger messenger = InitializeZRE(settings, appSettings, _logger);
 
-                _serviceProvider = InitializeServices(configuration, settings, messenger, _logger);
+                _serviceProvider = InitializeServices(appSettings, configuration, settings, messenger, _logger);
 
                 var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
@@ -68,13 +69,15 @@ namespace app_odinStationMonitor_wpf
             }
         }
 
-        private  ServiceProvider InitializeServices(IConfiguration configuration, ConsoleSettingsModel settings,
+        private  ServiceProvider InitializeServices(AppSettings appSettings, IConfiguration configuration, ConsoleSettingsModel settings,
                                                     Jendamark.Messaging.IMessenger messenger, Serilog.ILogger logger)
         {
             var services = new ServiceCollection();
 
             // Application configuration
             services.AddSingleton(configuration);
+
+            services.AddSingleton(appSettings);
 
             // LIC settings 
             services.AddSingleton(settings);
@@ -93,7 +96,7 @@ namespace app_odinStationMonitor_wpf
             });
 
             // Data Service
-            // services.AddSingleton<IStationRepository, StationRepository>();           
+            services.AddTransient<IDashboardService, DashboardService>();           
 
             // ViewModels
             services.AddTransient<DashboardViewModel>();
@@ -106,7 +109,7 @@ namespace app_odinStationMonitor_wpf
 
         private Jendamark.Messaging.IMessenger InitializeZRE(ConsoleSettingsModel settings, AppSettings appSettings, Serilog.ILogger logger)
         {            
-            int appIndex = 0;
+            int appIndex = 1;
 
             var station = settings.Stations.Single(x => x.StationID == appSettings.StationId);
 
@@ -118,14 +121,8 @@ namespace app_odinStationMonitor_wpf
             var domains = subStation.ZREDomains.ToHashSet();
 
             string baseName = $"STN{stationId}SUBSTN{subStationIndex}";
-            _zreStarter = new ZREMessagingStarter(
-                logger,
-                baseName,
-                settings.ZRENetworkInterfaceAddress,
-                settings.ZREBroadcastPort,
-                settings.ZREBroadcastIntervalInSeconds,
-                domains,
-                appIndex);
+            _zreStarter = new ZREMessagingStarter(logger, baseName, settings.ZRENetworkInterfaceAddress, settings.ZREBroadcastPort
+                                                  , settings.ZREBroadcastIntervalInSeconds, domains, appIndex);
 
             _zreStarter.Start();
 
