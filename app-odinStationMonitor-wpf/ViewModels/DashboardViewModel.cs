@@ -51,39 +51,13 @@ namespace TacoStationMonitor.ViewModels
             _logger = logger;
             _appSettings = appSettings;
 
-            BindMessages();
-
-           
-            timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(200)
-            };
-            timer.Tick += Timer_Tick;
-            timer.Start();
-           
+            BindMessages(); 
         }
 
         private void BindMessages()
         {
             _messenger.Subscribe(new SubscriptionTopic(this, "Station-StateMachine-PartValidInStation", PartValidated, TargetIDCreator.Station(_appSettings.StationId)));
-        }
-
-        private async void Timer_Tick(object sender, EventArgs e)
-        {
-            CurrentTime = DateTime.Now.ToString("dd MMM yyyy HH:mm:ss");
-
-            DashboardState data = await _service.GetDashboardData();
-
-            if (data == null)
-                return;
-
-            PartID = data.PartID;
-            NextPartID = data.NextPartID;
-            ChildPartNo = data.ChildPartNo;
-            StatusString = data.StatusString;
-            MatNo = data.MatNo;
-            Station = data.StationName;
-        }
+        }       
 
         private void PartValidated(int subscriberID, IMessage message)
         {
